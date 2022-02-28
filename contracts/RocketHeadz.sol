@@ -2,6 +2,7 @@ pragma solidity ^0.8.4;
 
 import "erc721a/contracts/ERC721A.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 
 // ______           _        _   _   _                _
 // | ___ \         | |      | | | | | |              | |
@@ -10,7 +11,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 // | |\ \ (_) | (__|   <  __/ |_| | | |  __/ (_| | (_| |/ /
 // \_| \_\___/ \___|_|\_\___|\__\_| |_/\___|\__,_|\__,_/___|
 
-contract RocketHeadz is ERC721A, Ownable {
+contract RocketHeadz is ERC721A, Ownable, Pausable {
     using Strings for uint256;
 
     string public baseURI;
@@ -19,6 +20,7 @@ contract RocketHeadz is ERC721A, Ownable {
     uint256 public constant MINT_PRICE = 0.08 ether;
     uint128 public constant MAX_MINTS_PER_TX = 10;
     uint128 public constant MAX_ROCKETHEADZ = 11111;
+    uint256 public reserved = 10;
 
     constructor(string memory _baseURI) ERC721A("RocketHeadz", "RH") {
         baseURI = _baseURI;
@@ -57,14 +59,35 @@ contract RocketHeadz is ERC721A, Ownable {
         uint256 quantity,
         bytes memory _data,
         bool safe
-    ) public payable {
+    ) public payable whenNotPaused {
         require(quantity <= MAX_MINTS_PER_TX, "MAX_MINT_PER_TX_EXCEDDED");
-        uint256 supply = totalSupply();
-        require(supply + quantity <= MAX_ROCKETHEADZ, "MAX_SUPPLY_EXCEEDED");
         require(
             msg.value >= MINT_PRICE * quantity,
             "INSUFFICIENT_ETH_FOR_MINT"
         );
+        uint256 supply = totalSupply();
+        require(
+            supply + quantity < MAX_ROCKETHEADZ - reserved,
+            "MAX_SUPPLY_EXCEEDED"
+        );
         _mint(to, quantity, _data, safe);
     }
+
+    /**
+        giveAway is used by the team to give away some NFT's to our community
+    */
+    function giveAway(
+        address to,
+        uint256 quantity,
+        bytes memory _data,
+        bool safe
+    ) public onlyOwner {
+        require(quantity <= reserved, "MAX_LIMIT_RESERVED_EXCEDDED");
+        _mint(to, quantity, _data, safe);
+        reserved -= quantity;
+    }
+
+    fallback() external payable {}
+
+    receive() external payable {}
 }
