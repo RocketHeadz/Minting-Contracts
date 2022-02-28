@@ -105,10 +105,10 @@ contract RocketHeadz is ERC721A, Ownable, Pausable {
         uint256 balanceT1 = (halfBalance * 5) / 100;
         (sent, ) = TREASURY_WALLET.call{value: balanceT1}("");
         require(sent, "FAILED_ETH_TRANSFER_T1");
-        uint256 balanceT2 = (halfBalance * 5) / 100;
+        uint256 balanceT2 = (halfBalance * 10) / 100;
         (sent, ) = TREASURY_WALLET.call{value: balanceT2}("");
         require(sent, "FAILED_ETH_TRANSFER_T2");
-        uint256 balanceT3 = (halfBalance * 5) / 100;
+        uint256 balanceT3 = (halfBalance * 15) / 100;
         (sent, ) = TREASURY_WALLET.call{value: balanceT3}("");
         require(sent, "Failed_ETHER_TRANSFER_TREASURY");
         uint256 balanceT4 = (halfBalance * 5) / 100;
