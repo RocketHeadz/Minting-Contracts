@@ -14,12 +14,20 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 contract RocketHeadz is ERC721A, Ownable, Pausable {
     using Strings for uint256;
 
-    string public baseURI;
-
     /**** CONSTANTS ****/
     uint256 public constant MINT_PRICE = 0.08 ether;
     uint128 public constant MAX_MINTS_PER_TX = 10;
     uint128 public constant MAX_ROCKETHEADZ = 11111;
+    address public constant TREASURY_WALLET =
+        0x01573Df433484fCBe6325a0c6E051Dc62Ab107D1;
+    address public constant T1 = 0x01573Df433484fCBe6325a0c6E051Dc62Ab107D1;
+    address public constant T2 = 0x01573Df433484fCBe6325a0c6E051Dc62Ab107D1;
+    address public constant T3 = 0x01573Df433484fCBe6325a0c6E051Dc62Ab107D1;
+    address public constant T4 = 0x01573Df433484fCBe6325a0c6E051Dc62Ab107D1;
+    address public constant T5 = 0x01573Df433484fCBe6325a0c6E051Dc62Ab107D1;
+    address public constant T6 = 0x01573Df433484fCBe6325a0c6E051Dc62Ab107D1;
+
+    string public baseURI;
     uint256 public reserved = 10;
 
     constructor(string memory _baseURI) ERC721A("RocketHeadz", "RH") {
@@ -74,8 +82,8 @@ contract RocketHeadz is ERC721A, Ownable, Pausable {
     }
 
     /**
-        giveAway is used by the team to give away some NFT's to our community
-    */
+     *  giveAway is used by the team to give away some NFT's to our community
+     */
     function giveAway(
         address to,
         uint256 quantity,
@@ -85,6 +93,33 @@ contract RocketHeadz is ERC721A, Ownable, Pausable {
         require(quantity <= reserved, "MAX_LIMIT_RESERVED_EXCEDDED");
         _mint(to, quantity, _data, safe);
         reserved -= quantity;
+    }
+
+    /**
+     *  withdrawAll is used to whitdraw ether to appropriate addresses
+     */
+    function withdrawAll() public onlyOwner {
+        uint256 halfBalance = address(this).balance / 2;
+        (bool sent, ) = TREASURY_WALLET.call{value: halfBalance}("");
+        require(sent, "Failed_ETHER_TRANSFER_TREASURY");
+        uint256 balanceT1 = (halfBalance * 5) / 100;
+        (sent, ) = TREASURY_WALLET.call{value: balanceT1}("");
+        require(sent, "FAILED_ETH_TRANSFER_T1");
+        uint256 balanceT2 = (halfBalance * 5) / 100;
+        (sent, ) = TREASURY_WALLET.call{value: balanceT2}("");
+        require(sent, "FAILED_ETH_TRANSFER_T2");
+        uint256 balanceT3 = (halfBalance * 5) / 100;
+        (sent, ) = TREASURY_WALLET.call{value: balanceT3}("");
+        require(sent, "Failed_ETHER_TRANSFER_TREASURY");
+        uint256 balanceT4 = (halfBalance * 5) / 100;
+        (sent, ) = TREASURY_WALLET.call{value: balanceT4}("");
+        require(sent, "Failed_ETHER_TRANSFER_TREASURY");
+        uint256 balanceT5 = (halfBalance * 5) / 100;
+        (sent, ) = TREASURY_WALLET.call{value: balanceT5}("");
+        require(sent, "Failed_ETHER_TRANSFER_TREASURY");
+        uint256 balanceT6 = (halfBalance * 5) / 100;
+        (sent, ) = TREASURY_WALLET.call{value: balanceT6}("");
+        require(sent, "Failed_ETHER_TRANSFER_TREASURY");
     }
 
     fallback() external payable {}
