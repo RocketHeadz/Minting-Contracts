@@ -1,6 +1,5 @@
 import { expect } from "chai";
 import { utils } from "ethers";
-import { solidityKeccak256 } from "ethers/lib/utils";
 import { ethers } from "hardhat";
 import keccak256 from "keccak256";
 import MerkleTree from "merkletreejs";
