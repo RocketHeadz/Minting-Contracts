@@ -30,7 +30,7 @@ contract RocketHeadz is ERC721A, Ownable, Pausable {
 
     /*** VARIABLES ***/
     string public baseURI;
-    uint128 public reserved = 10;
+    uint256 public reserved = 10;
     bool public whitelistSaleIsActive;
     bool public publicSaleIsActive;
     bytes32 public merkleRoot;
