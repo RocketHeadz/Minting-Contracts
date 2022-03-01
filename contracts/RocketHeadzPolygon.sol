@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
-
 import "@maticnetwork/fx-portal/contracts/tunnel/FxBaseChildTunnel.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
-import "erc721a/contracts/ERC721A.sol";
+import "./ERC721A.sol";
 
 contract RocketHeadzPolygon is ERC721A, FxBaseChildTunnel, Pausable, Ownable {
     constructor(address _fxChild)
@@ -18,11 +17,17 @@ contract RocketHeadzPolygon is ERC721A, FxBaseChildTunnel, Pausable, Ownable {
         bytes memory message
     ) internal override validateSender(sender) {
         // decode incoming data
-        (, address to, , uint256 quantity) = abi.decode(
-            message,
-            (address, address, uint256, uint256)
-        );
-        _mint(to, quantity, "0x", true);
+        (
+            address fromAddress,
+            address to,
+            uint256 startTokenId,
+            uint256 quantity
+        ) = abi.decode(message, (address, address, uint256, uint256));
+        if (fromAddress == address(0)) {
+            _mint(to, quantity, "0x", true);
+        } else {
+            _transfer(fromAddress, to, startTokenId);
+        }
     }
 
     /**
