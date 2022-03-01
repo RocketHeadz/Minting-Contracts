@@ -75,9 +75,7 @@ contract RocketHeadz is ERC721A, Ownable, Pausable {
             "MAX_WHITELIST_MINTS_REACHED"
         );
         // generate the root node that will be searched for
-        bytes32 leaf = keccak256(
-            abi.encodePacked(msg.sender, maxAllowanceToMint)
-        );
+        bytes32 leaf = keccak256(abi.encode(msg.sender, maxAllowanceToMint));
         // verify that the proof sent by the user is correct
         bool verified = MerkleProof.verify(proof, merkleRoot, leaf);
         require(verified, "PROOF_SENT_IS_INVALID");
