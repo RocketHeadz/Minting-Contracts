@@ -1,9 +1,11 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
 import "erc721a/contracts/ERC721A.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import "@maticnetwork/fx-portal/contracts/tunnel/FxBaseRootTunnel.sol";
 
 // ______           _        _   _   _                _
 // | ___ \         | |      | | | | | |              | |
@@ -12,7 +14,7 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 // | |\ \ (_) | (__|   <  __/ |_| | | |  __/ (_| | (_| |/ /
 // \_| \_\___/ \___|_|\_\___|\__\_| |_/\___|\__,_|\__,_/___|
 
-contract RocketHeadz is ERC721A, Ownable, Pausable {
+contract RocketHeadz is ERC721A, FxBaseRootTunnel, Ownable, Pausable {
     using Strings for uint256;
 
     /**** CONSTANTS ****/
@@ -38,8 +40,14 @@ contract RocketHeadz is ERC721A, Ownable, Pausable {
     /**
      * @dev Constructor sets the _baseURI and merkleRoot
      */
-    constructor(string memory _baseURI, bytes32 _merkleRoot)
+    constructor(
+        string memory _baseURI,
+        bytes32 _merkleRoot,
+        address _checkpointManager,
+        address _fxRoot
+    )
         ERC721A("RocketHeadz", "RH")
+        FxBaseRootTunnel(_checkpointManager, _fxRoot)
     {
         baseURI = _baseURI;
         merkleRoot = _merkleRoot;
@@ -139,6 +147,59 @@ contract RocketHeadz is ERC721A, Ownable, Pausable {
                 ? string(abi.encodePacked(baseURI, tokenId.toString()))
                 : "";
     }
+
+    /**
+     * @dev See {IERC721-transferFrom}.
+     */
+    function transferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public override whenNotPaused {
+        super.transferFrom(from, to, tokenId);
+    }
+
+    /**
+     * @dev See {IERC721-safeTransferFrom}.
+     */
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public override whenNotPaused {
+        super.safeTransferFrom(from, to, tokenId);
+    }
+
+    /**
+     * @dev See {IERC721-safeTransferFrom}.
+     */
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory _data
+    ) public override whenNotPaused {
+        super.safeTransferFrom(from, to, tokenId, _data);
+    }
+
+    /**
+     * _afterTokenTransfers is overrided to ensure that after tokens have been transfered they get replayed to Polygon Child
+     * contract as well
+     */
+    function _afterTokenTransfers(
+        address from,
+        address to,
+        uint256 startTokenId,
+        uint256 quantity
+    ) internal override {
+        bytes memory message = abi.encode(from, to, startTokenId, quantity);
+        _sendMessageToChild(message);
+    }
+
+    /**
+     * _processMessageFromChild does nothing
+     */
+    function _processMessageFromChild(bytes memory message) internal override {}
 
     /**
      *  withdrawAll is used to whitdraw ether to appropriate addresses
